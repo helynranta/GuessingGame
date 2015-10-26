@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <vector>
-#include <string>
 
 #include <unistd.h> // close
 #include <netdb.h> // getprotobyname

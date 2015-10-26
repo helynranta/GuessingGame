@@ -35,13 +35,13 @@ public:
             gui->getText(name)->setText(msg);
             int x = 64;
             for(unsigned int i = msgs; i > 0; i--) {
-                std::string name = "msg"+std::to_string(i);
+                name = "msg"+std::to_string(i);
                 gui->getText(name)->setY(Camera::getHeight()-x);
                 x += 24;
             }
         }
         if(Input::isKeyPressed(SDLK_RETURN) && gui->getInput("input")->getText().length() > 0) {
-            InetConnection::send(gui->getInput("input")->getText());
+            InetConnection::sendTCP(gui->getInput("input")->getText());
             gui->getInput("input")->setText("");
         }
     }

@@ -65,12 +65,14 @@ cleaner: clean
 
 # Link
 $(TARGET): $(OBJECTS)
-	$(CC) -o $(TARGETDIR)/$(TARGET) $^ $(LIB)
+	@echo "Linking " $(TARGETDIR)/$(TARGET)
+	@$(CC) -o $(TARGETDIR)/$(TARGET) $^ $(LIB)
 
 # Compile
 $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@echo "Building" $@
+	@$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 	@$(CC) $(CFLAGS) $(INCDEP) -MM $(SRCDIR)/$*.$(SRCEXT) > $(BUILDDIR)/$*.$(DEPEXT)
 	@cp -f $(BUILDDIR)/$*.$(DEPEXT) $(BUILDDIR)/$*.$(DEPEXT).tmp
 	@sed -e 's|.*:|$(BUILDDIR)/$*.$(OBJEXT):|' < $(BUILDDIR)/$*.$(DEPEXT).tmp > $(BUILDDIR)/$*.$(DEPEXT)
@@ -81,12 +83,5 @@ scene:
 	@chmod +x ./create_scenes.sh
 	@./create_scenes.sh
 
-m-val-run: all val-run
-
-val-run:
-	@valgrind --show-reachable=yes --track-origins=yes bin/program
-
-val-run-all:
-	@valgrind --leak-check=full --show-leak-kinds=all bin/program
 #Non-File Targets
 .PHONY: all remake clean cleaner resources scene

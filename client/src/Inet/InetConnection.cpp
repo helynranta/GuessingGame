@@ -26,21 +26,21 @@ void InetConnection::destroy(void)  {
     messages.empty();
 }
 
-bool InetConnection::send(const std::string& msg) {
+bool InetConnection::sendTCP(const std::string& msg) {
     bool success = false;
 
     if((::send(socketfd, msg.c_str(),strlen(msg.c_str()), 0)) < 0) {
         std::cout << "error sendto()" << std::endl;
     }
     else {
-        //std::cout << "Client: Sent msg: " << msg << std::endl;
+        std::cout << "Client: Sent msg: " << msg << std::endl;
         success = true;
     }
 
     return success;
 }
 
-bool InetConnection::connect(std::string l_ip, unsigned int l_port) {
+bool InetConnection::connectTCP(std::string l_ip, unsigned int l_port) {
     bool success = true;
     m_state = ConnectionState::CONNECTING;
     std::cout << "Trying to connect to host: " << l_ip << ":" << l_port << std::endl;
@@ -54,7 +54,7 @@ bool InetConnection::connect(std::string l_ip, unsigned int l_port) {
     server.sin_addr.s_addr = inet_addr(l_ip.c_str());
     // try to connect
     // THIS IS BLOCKING!
-    if(::connect(socketfd,(struct sockaddr*)&server,sizeof(server)) < 0) {
+    if(::connect(socketfd,reinterpret_cast<struct sockaddr*>(&server),sizeof(server)) < 0) {
         std::cerr << "Cannot connect..." << std::endl;
         m_state = ConnectionState::DISCONNECTED;
     }
@@ -85,6 +85,7 @@ std::string InetConnection::update() {
         if(FD_ISSET(socketfd, &rset)) {
             memset(buffer, '\0', sizeof(buffer));
             recv(socketfd, buffer, sizeof(buffer), 0);
+            std::cout << buffer << std::endl;
             if(strlen(buffer) == 0) {
                 std::cout << "server disconnected!" << std::endl;
                 m_state = ConnectionState::TIMING_OUT;

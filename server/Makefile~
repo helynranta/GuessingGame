@@ -13,6 +13,7 @@ SRCDIR      := src
 INCDIR      := inc
 BUILDDIR    := obj
 TARGETDIR   := bin
+RESDIR      := res
 # Extensions
 SRCEXT      := cpp
 DEPEXT      := d
@@ -35,12 +36,16 @@ SOURCES		:=$(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 # Defauilt Make
-all: directories $(TARGET)
+all: resources $(TARGET)
 
 run: all
 	$(TARGETDIR)/$(TARGET)
 # Remake
 remake: cleaner all
+
+# Copy Resources from Resources Directory to Target Directory
+resources: directories
+	@cp -r $(RESDIR)/ $(TARGETDIR)/
 
 # Make the Directories
 directories:

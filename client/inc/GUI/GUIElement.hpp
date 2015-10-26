@@ -12,9 +12,11 @@ protected:
     int m_bg_x = 0;
     int m_bg_y = 0;
     int m_width = 0.0f;
+    int m_height = 64.0f;
+    
     int m_bg_width = 800;
     int m_bg_height = 64;
-    int m_height = 0.0f;
+
     float m_scale = 0.5f;
     SDL_Renderer* m_renderer = nullptr;
     TEXT_ALIGN m_align = TEXT_ALIGN::LEFT;

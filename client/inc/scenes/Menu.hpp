@@ -19,7 +19,7 @@ public:
     }
 
     inline void awake() override {
-        InetConnection::connect("127.0.0.1", 3000);
+        InetConnection::connectTCP("127.0.0.1", 3000);
         gui->addText("hint", new GUIText(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
         gui->addInput("ip", new GUIInput(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
         gui->getText("hint")->setX(Camera::getWidth()/2.0f)->setY(Camera::getHeight()/2.0f-30);
@@ -34,7 +34,7 @@ public:
             gui->getText("hint")->setText("Connecting to: "+gui->getInput("ip")->getText());
             InetConnection::setState(ConnectionState::CONNECTING);
         } else if(InetConnection::m_state == ConnectionState::CONNECTING)
-            InetConnection::connect(gui->getInput("ip")->getText(), 3000);
+            InetConnection::connectTCP(gui->getInput("ip")->getText(), 3000);
         else if(InetConnection::m_state == ConnectionState::CONNECTED) {
             Engine::startScene("Lobby");
         }

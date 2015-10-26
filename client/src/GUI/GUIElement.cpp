@@ -13,17 +13,17 @@ void GUIElement::drawBackground (int width, int height) {
         m_bg_x = m_x;
         m_bg_y = m_y;
         if(m_align == TEXT_ALIGN::CENTER) {
-            m_bg_x = m_x - m_width;
+            m_bg_x = m_x - m_bg_width;
         } else if(m_align == TEXT_ALIGN::CENTER_XY) {
-            m_bg_x -= m_width/2*m_scale;
-            m_bg_y -= m_height/2*m_scale;
+            m_bg_x -= m_bg_width/2*m_scale;
+            m_bg_y -= m_bg_height/2*m_scale;
         } else if(m_align == TEXT_ALIGN::RIGHT) {
-            m_bg_x -= m_width*m_scale;
+            m_bg_x -= m_bg_width*m_scale;
         } else if(m_align == TEXT_ALIGN::OVER) {
-            m_bg_y -= m_height*m_scale;
+            m_bg_y -= m_bg_height*m_scale;
         } else if(m_align == TEXT_ALIGN::OVER_RIGHT) {
-            m_bg_y -= m_height*m_scale;
-            m_bg_x -= m_width*m_scale;
+            m_bg_y -= m_bg_height*m_scale;
+            m_bg_x -= m_bg_width*m_scale;
         }
         SDL_SetRenderDrawColor( m_renderer, 40, 40, 40, 255 );
         const SDL_Rect rect =  {m_bg_x, m_bg_y, int(width*m_scale), int(height*m_scale)};

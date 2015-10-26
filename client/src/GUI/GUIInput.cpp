@@ -16,9 +16,9 @@ bool GUIInput::update() {
         }
         else if(Input::isKeyDown(SDLK_LSHIFT) || Input::isKeyDown(SDLK_RSHIFT)) {
             if(tmp == ".")
-                m_text += ":"
+                m_text += ":";
             else if(tmp == "0")
-                m_text += "="
+                m_text += "=";
         }
         else if(tmp.length() == 1) {
             if(m_maxInputLength == 0 || m_text.length() < m_maxInputLength)

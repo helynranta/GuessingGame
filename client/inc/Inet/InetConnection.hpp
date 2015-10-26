@@ -31,8 +31,8 @@ private:
     static fd_set rset;
 public:
     static ConnectionState m_state;
-    static bool send(const std::string& msg);
-    static bool connect(std::string ip, unsigned int port);
+    static bool sendTCP(const std::string& msg);
+    static bool connectTCP(std::string ip, unsigned int port);
     static bool disconnect();
     static std::string update();
     static std::vector<Message*> messages;
