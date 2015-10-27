@@ -34,8 +34,6 @@ public:
 	inline int getTCPSock() { return TCPSock; }
 };
 
-static int ID_COUNT = 0;
-
 class TCPServer {
 private:
     /* private data */
@@ -45,9 +43,7 @@ private:
     STATE m_state = STATE::EXIT;
     int sockfd  = 0; // for listen
     int new_fd  = 0; // for new connections
-    int sin_size = 0;
     struct sockaddr_in my_addr;
-    struct sockaddr_in out_addr;
 
     struct timeval tv;  // time wait for socket to be changed
     fd_set readfds, writefds, exceptfds;

@@ -1,4 +1,5 @@
 #include "../inc/TCPServer.hpp"
+
 /* Constructor: TCPSserver */
 TCPServer::TCPServer(void) {
 
@@ -13,6 +14,8 @@ void TCPServer::run(void) {
     // max is the biggest possible socket id for select
     int l_max = 0;
     char buffer[1024];
+    static int ID_COUNT = 0;
+
     std::string new_id_msg;
     if(init()) {
         std::cout << "--------SERVER RUNNING----------" << std::endl;
@@ -38,7 +41,7 @@ void TCPServer::run(void) {
                     std::cout << "amount connected clients now: " << connected.size() << std::endl;
                     new_id_msg = "newid:"+std::to_string(connected.back().getID());
                     std::cout << new_id_msg << std::endl;
-                    ::sendto(connected.back().getTCPSock(), new_id_msg.c_str(), sizeof(new_id_msg.c_str()), NULL, NULL, NULL);
+                    ::sendto(connected.back().getTCPSock(), new_id_msg.c_str(), sizeof(new_id_msg.c_str()), 0, reinterpret_cast<const struct sockaddr *>(NULL), 0);
                     for(auto& sit : connected) {
                         send(sit.getTCPSock(), ("srvmsg:New client connected, User"+std::to_string(connected.back().getID())).c_str(), 1024, 0);
                     }

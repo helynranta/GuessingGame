@@ -80,7 +80,7 @@ std::string InetConnection::update() {
     char buffer[1024];
     FD_ZERO(&rset);
     FD_SET(socketfd, &rset);
-    tv.tv_sec = 0.01; tv.tv_usec = 0.001;
+    tv.tv_sec = long(0.01); tv.tv_usec = long(0.001);
     if(select(socketfd+1, &rset, nullptr, nullptr, &tv) > 0) {
         if(FD_ISSET(socketfd, &rset)) {
             memset(buffer, '\0', sizeof(buffer));
