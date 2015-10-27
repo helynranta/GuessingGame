@@ -23,10 +23,10 @@ class Connection {
 private:
 	/* private data */
 	int id = -1;
-	int TCPSock = -1;	
+	int TCPSock = -1;
 protected:
 	/* protected data */
-	
+
 public:
 	inline Connection(int i, int t) : id(i), TCPSock(t) {}
 	inline ~Connection() {}

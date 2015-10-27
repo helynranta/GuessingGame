@@ -1,4 +1,4 @@
-#include "TCPServer.hpp"
+#include "../inc/TCPServer.hpp"
 /* Constructor: TCPSserver */
 TCPServer::TCPServer(void) {
 
@@ -28,35 +28,38 @@ void TCPServer::run(void) {
                 if(it.getTCPSock() >= l_max) l_max = it.getTCPSock() + 1;
             }
             tv.tv_sec = 2; tv.tv_usec = 0;
-            std::cout << "ping" << std::endl;
+            //std::cout << "ping" << std::endl;
             if(select(l_max, &readfds, nullptr, nullptr, &tv) > 0) {
                 // readable
                 if (FD_ISSET(sockfd, &readfds)) {
-                    connected.emplace_back(ID_COUNT++, ::accept(sockfd, static_cast<struct sockaddr*>(NULL), NULL));
+                    connected.emplace_back(++ID_COUNT, ::accept(sockfd, static_cast<struct sockaddr*>(NULL), NULL));
                     std::cout << "new client connected with TCP!" << std::endl;
-		    std::cout << "new client was given sock " << connected.back().getID() << " and new id " << connected.back().getTCPSock() << std::endl;
+                    std::cout << "new client was given sock " << connected.back().getID() << " and new id " << connected.back().getTCPSock() << std::endl;
                     std::cout << "amount connected clients now: " << connected.size() << std::endl;
-		    new_id_msg = "newid:"+std::to_string(ID_COUNT);
-			std::cout << new_id_msg << std::endl;
-		    ::sendto(connected.back().getTCPSock(), new_id_msg.c_str(), sizeof(new_id_msg.c_str()), NULL, NULL, NULL);
-                } else {}
+                    new_id_msg = "newid:"+std::to_string(connected.back().getID());
+                    std::cout << new_id_msg << std::endl;
+                    ::sendto(connected.back().getTCPSock(), new_id_msg.c_str(), sizeof(new_id_msg.c_str()), NULL, NULL, NULL);
+                    for(auto& sit : connected) {
+                        send(sit.getTCPSock(), ("srvmsg:New client connected, User"+std::to_string(connected.back().getID())).c_str(), 1024, 0);
+                    }
+                }
                 for( auto& rit : connected ) {
-		    //std::cout << "lol" << std::endl;
+                    //std::cout << "lol" << std::endl;
                     memset(buffer, '\0', sizeof(buffer));
                     if(FD_ISSET(rit.getTCPSock(), &readfds)) {
                         recv(rit.getTCPSock(), buffer, sizeof(buffer), 0);
-			//std::cout << buffer << std::endl;
+                        //std::cout << buffer << std::endl;
                         if(strlen(buffer) == 0) {
                             std::cout << "TCP connection has disconnected!" << std::endl;
                             rit = connected.back();
                             connected.pop_back();
                             std::cout << "amount connected clients now: " << connected.size() << std::endl;
                         } else {
-			    // send to all TCP connections
+                            // send to all TCP connections
                             //std::cout << buffer << std::endl;
-			    std::string clmsg = "clmsg"+str(buffer);
+                            std::string clmsg(buffer);
                             for(auto& sit : connected) {
-                                send(sit.getTCPSock(), clmsg.c_str(), sizeof(clmsg), 0);
+                                send(sit.getTCPSock(), ("clmsg:"+std::to_string(rit.getID())+":"+clmsg).c_str(), 1024, 0);
                             }
                         }
                     }

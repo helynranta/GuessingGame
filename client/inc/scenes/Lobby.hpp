@@ -2,6 +2,20 @@
 #define _LOBBY_HPP
 
 #include "Engine.hpp"
+// http://stackoverflow.com/questions/236129/split-a-string-in-c
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+    std::stringstream ss(s);
+    std::string item;
+    while (std::getline(ss, item, delim)) {
+        elems.push_back(item);
+    }
+    return elems;
+}
+std::vector<std::string> split(const std::string &s, char delim) {
+    std::vector<std::string> elems;
+    split(s, delim, elems);
+    return elems;
+}
 
 class Lobby : public Scene {
 private:
@@ -29,15 +43,38 @@ public:
     inline void update(float dt) override {
         std::string msg = InetConnection::update();
         if(msg.length() > 0) {
-            msgs++;
-            std::string name = "msg"+std::to_string(msgs);
-            gui->addText(name, new GUIText(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
-            gui->getText(name)->setText(msg);
-            int x = 64;
-            for(unsigned int i = msgs; i > 0; i--) {
-                name = "msg"+std::to_string(i);
-                gui->getText(name)->setY(Camera::getHeight()-x);
-                x += 24;
+            std::vector<std::string> msgv = split(msg, ':');
+            std::cout << msg << std::endl;
+            if(msgv[0] == "clmsg")
+            {
+                msgs++;
+                gui->addText("msg"+std::to_string(msgs), new GUIText(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
+                gui->getText("msg"+std::to_string(msgs))->setText("User"+msgv[1]+": "+msgv[2]);
+                int x = 64;
+                for(unsigned int i = msgs; i > 0; i--) {
+                    gui->getText("msg"+std::to_string(i))->setY(Camera::getHeight()-x);
+                    x += 24;
+                }
+            } else if(msgv[0] == "newid") {
+                msgs++;
+                gui->addText("msg"+std::to_string(msgs), new GUIText(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
+                gui->getText("msg"+std::to_string(msgs))->setText("You have been given a username: User"+msgv[1])->setColor({200,50,50, 255});
+                int x = 64;
+                for(unsigned int i = msgs; i > 0; i--) {
+                    gui->getText("msg"+std::to_string(i))->setY(Camera::getHeight()-x);
+                    x += 24;
+                }
+            } else if(msgv[0] == "srvmsg") {
+                msgs++;
+                gui->addText("msg"+std::to_string(msgs), new GUIText(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
+                gui->getText("msg"+std::to_string(msgs))->setText(msgv[1])->setColor({200,50,50, 255});
+                int x = 64;
+                for(unsigned int i = msgs; i > 0; i--) {
+                    gui->getText("msg"+std::to_string(i))->setY(Camera::getHeight()-x);
+                    x += 24;
+                }
+            } else {
+                std::cerr << "undefined message recieved!" << std::endl;
             }
         }
         if(Input::isKeyPressed(SDLK_RETURN) && gui->getInput("input")->getText().length() > 0) {

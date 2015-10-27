@@ -14,7 +14,7 @@ unsigned int       InetConnection::port = 0;
 std::vector<Message*> InetConnection::messages;
 
 void InetConnection::init(void) {
-    // this is temp. replace 1 with size of message
+
 }
 
 void InetConnection::destroy(void)  {
@@ -85,7 +85,7 @@ std::string InetConnection::update() {
         if(FD_ISSET(socketfd, &rset)) {
             memset(buffer, '\0', sizeof(buffer));
             recv(socketfd, buffer, sizeof(buffer), 0);
-            std::cout << buffer << std::endl;
+            //std::cout << buffer << std::endl;
             if(strlen(buffer) == 0) {
                 std::cout << "server disconnected!" << std::endl;
                 m_state = ConnectionState::TIMING_OUT;
