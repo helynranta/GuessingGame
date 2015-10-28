@@ -5,10 +5,12 @@
 ConnectionState   InetConnection::m_state = ConnectionState::DISCONNECTED;
 
 struct sockaddr_in  InetConnection::server;
+struct sockaddr_in  InetConnection::me;
 int               InetConnection::socketfd = -1;
 fd_set InetConnection::rset;
 std::string       InetConnection::ip = "";
 unsigned int       InetConnection::port = 0;
+int InetConnection::socketudp = 0;
 
 
 std::vector<Message*> InetConnection::messages;
@@ -39,18 +41,28 @@ bool InetConnection::sendTCP(const std::string& msg) {
 
     return success;
 }
+bool InetConnection::sendUDP(const std::string& msg) {
+  bool success = false;
+  if((::sendto(socketudp, msg.c_str(), sizeof(msg.c_str()), 0, reinterpret_cast<struct sockaddr *>(&server), sizeof(server))) < 0) {
+    std::cerr << "UPD Send error" << std::endl;
+  } else {
+    std::cout << "Client: send UPD msg: " << msg << std::endl;
+    success = true;
+  }
+  return success;
+}
 
 bool InetConnection::connectTCP(std::string l_ip, unsigned int l_port) {
     bool success = true;
     m_state = ConnectionState::CONNECTING;
     std::cout << "Trying to connect to host: " << l_ip << ":" << l_port << std::endl;
-
+    // connect with TCP
     if((socketfd = socket(AF_INET, SOCK_STREAM, 0))<0) {
         std::cerr << "NO SOCKET FOR YOU BIATCH!"<< std::endl;
         success = false;
     }
-    server.sin_family=AF_INET;
-    server.sin_port = htons(l_port);
+    server.sin_family =AF_INET;
+    server.sin_port   = htons(l_port);
     server.sin_addr.s_addr = inet_addr(l_ip.c_str());
     // try to connect
     // THIS IS BLOCKING!
@@ -63,6 +75,20 @@ bool InetConnection::connectTCP(std::string l_ip, unsigned int l_port) {
         m_state = ConnectionState::CONNECTED;
         ip = l_ip;
         port = l_port;
+    }
+    // create udp socket
+  
+    if((socketudp = socket(AF_INET, SOCK_DGRAM, 0 ))<0) {
+      std::cerr << "no upd socket for you, BIATCH!" << std::endl;
+      success = false;
+    }
+    // fill me, because why the fuck not
+    memset( reinterpret_cast<char*>(&me), 0, sizeof(me));
+    me.sin_family = AF_INET;
+    me.sin_port = htons(l_port);
+    me.sin_addr.s_addr = inet_addr(l_ip.c_str());
+    if(bind(socketudp, reinterpret_cast<struct sockaddr*>(&me), sizeof(me)) <0) {
+      std::cerr << "no bind lol" << std::endl;
     }
     return success;
 }

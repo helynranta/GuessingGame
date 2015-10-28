@@ -24,14 +24,17 @@ enum ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, TIMING_OUT, EXITING 
 class InetConnection {
 private:
     static struct sockaddr_in server;
+    static struct sockaddr_in me;
     static int socketfd;
     static int rval;
     static std::string ip;
     static unsigned int port;
     static fd_set rset;
+    static int socketudp;
 public:
     static ConnectionState m_state;
     static bool sendTCP(const std::string& msg);
+    static bool sendUDP(const std::string& msg);
     static bool connectTCP(std::string ip, unsigned int port);
     static bool disconnect();
     static std::string update();

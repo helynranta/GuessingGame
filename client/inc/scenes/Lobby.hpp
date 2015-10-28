@@ -69,7 +69,8 @@ public:
         if(Input::isKeyPressed(SDLK_RETURN) && gui->getInput("input")->getText().length() > 0) {
             InetConnection::sendTCP(gui->getInput("input")->getText());
             gui->getInput("input")->setText("");
-        }
+        } else if(Input::isKeyPressed(SDLK_RETURN))
+          InetConnection::sendUDP("11");
     }
 
     inline void end() override {}
