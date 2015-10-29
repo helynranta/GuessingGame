@@ -18,7 +18,6 @@ std::vector<Message*> InetConnection::messages;
 void InetConnection::init(void) {
 
 }
-
 void InetConnection::destroy(void)  {
     // delete messages behind pointers
     for ( auto& it : messages) {
@@ -27,7 +26,6 @@ void InetConnection::destroy(void)  {
     // empty whole vector
     messages.empty();
 }
-
 bool InetConnection::sendTCP(const std::string& msg) {
     bool success = false;
 
@@ -35,7 +33,7 @@ bool InetConnection::sendTCP(const std::string& msg) {
         std::cout << "error sendto()" << std::endl;
     }
     else {
-        std::cout << "Client: Sent msg: " << msg << std::endl;
+        std::cout << "TCP: Sent msg: " << msg << std::endl;
         success = true;
     }
 
@@ -77,7 +75,6 @@ bool InetConnection::connectTCP(std::string l_ip, unsigned int l_port) {
         port = l_port;
     }
     // create udp socket
-  
     if((socketudp = socket(AF_INET, SOCK_DGRAM, 0 ))<0) {
       std::cerr << "no upd socket for you, BIATCH!" << std::endl;
       success = false;
@@ -97,8 +94,6 @@ bool InetConnection::disconnect() {
   //close(socketfd);
   return true;
 }
-
-
 std::string InetConnection::update() {
     // http://stackoverflow.com/questions/13878306/multiplexing-stdin-and-socket-in-client-c
     std::string msg = "";

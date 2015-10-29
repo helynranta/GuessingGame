@@ -10,6 +10,7 @@ class Lobby : public Scene {
 private:
     /* private data */
     unsigned int msgs = 0;
+    int id = -1;
 protected:
     /* protected data */
 public:
@@ -46,6 +47,7 @@ public:
                 }
             } else if(msgv[0] == "newid") {
                 msgs++;
+                id = atoi(msgv[1].c_str());
                 gui->addText("msg"+std::to_string(msgs), new GUIText(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
                 gui->getText("msg"+std::to_string(msgs))->setText("You have been given a username: User"+msgv[1])->setColor({200,50,50, 255});
                 int x = 64;
@@ -66,11 +68,15 @@ public:
                 std::cerr << "undefined message recieved!" << std::endl;
             }
         }
-        if(Input::isKeyPressed(SDLK_RETURN) && gui->getInput("input")->getText().length() > 0) {
+        if(Input::isKeyPressed(SDLK_RETURN) && gui->getInput("input")->getText().length() > 1) {
             InetConnection::sendTCP(gui->getInput("input")->getText());
             gui->getInput("input")->setText("");
-        } else if(Input::isKeyPressed(SDLK_RETURN))
-          InetConnection::sendUDP("11");
+        } else if(Input::isKeyPressed(SDLK_RETURN)) {
+            if(atoi(gui->getInput("input")->getText().c_str()) != 0) {
+                InetConnection::sendUDP(gui->getInput("input")->getText()+std::to_string(id));
+                gui->getInput("input")->setText("");
+            }
+        }
     }
 
     inline void end() override {}

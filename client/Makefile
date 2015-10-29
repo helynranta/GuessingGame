@@ -39,7 +39,7 @@ OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJE
 all: scene resources $(TARGET)
 
 run: all
-	$(TARGETDIR)/$(TARGET)
+	@$(TARGETDIR)/$(TARGET)
 # Remake
 remake: cleaner all
 

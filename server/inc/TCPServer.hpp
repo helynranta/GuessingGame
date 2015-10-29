@@ -8,8 +8,9 @@
 #include <unistd.h> // close
 #include <netdb.h> // getprotobyname
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <time.h>
+#include <string.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -24,6 +25,7 @@ private:
 	/* private data */
 	int id = -1;
 	int TCPSock = -1;
+	int quesses_left = 2;
 protected:
 	/* protected data */
 
@@ -41,16 +43,21 @@ private:
     const int BACKLOG = 10; // how many pending connections queue will hold
 
     STATE m_state = STATE::EXIT;
-    int sockfd  = 0; // for listen
+    int sockfd_tcp = 0; // for listen
+	int sockfd_udp = 0;
     int new_fd  = 0; // for new connections
     struct sockaddr_in my_addr;
-
+	struct sockaddr_in me;
     struct timeval tv;  // time wait for socket to be changed
     fd_set readfds, writefds, exceptfds;
     std::vector<Connection> connected;
 protected:
     /* protected data */
     bool init(void);
+	void select(void);
+	void logic(void);
+	// our random number
+	int random_number = rand() % 10;
 public:
     /* public data */
     TCPServer(void);
