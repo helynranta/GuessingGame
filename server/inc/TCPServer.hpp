@@ -24,16 +24,24 @@ class Connection {
 private:
 	/* private data */
 	int id = -1;
+	std::string nick = "undefined";
 	int TCPSock = -1;
-	int quesses_left = 2;
+	struct sockaddr_in info;
 protected:
 	/* protected data */
-
 public:
-	inline Connection(int i, int t) : id(i), TCPSock(t) {}
+	inline Connection(int i, int t) : id(i), TCPSock(t) {
+		nick = "User"+std::to_string(id);
+	}
 	inline ~Connection() {}
-	inline int getID() { return id; }
-	inline int getTCPSock() { return TCPSock; }
+	//* getters *//
+	inline int getID() const { return id; }
+	inline int getTCPSock() const { return TCPSock; }
+	inline struct sockaddr_in getSockaddr_in() const { return info; }
+	inline std::string getNick() const { return nick; }
+	//* setters *//
+	inline void setNick(std::string n) { nick = n; }
+	inline void setSockaddr_in(struct sockaddr_in in) { info = in; }
 };
 
 class TCPServer {
@@ -47,7 +55,6 @@ private:
 	int sockfd_udp = 0;
     int new_fd  = 0; // for new connections
     struct sockaddr_in my_addr;
-	struct sockaddr_in me;
     struct timeval tv;  // time wait for socket to be changed
     fd_set readfds, writefds, exceptfds;
     std::vector<Connection> connected;

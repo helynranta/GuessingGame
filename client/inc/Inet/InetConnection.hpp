@@ -23,8 +23,8 @@ enum ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, TIMING_OUT, EXITING 
 
 class InetConnection {
 private:
-    static struct sockaddr_in server;
-    static struct sockaddr_in me;
+    static struct sockaddr_in me_tcp;
+    static struct sockaddr_in me_udp;
     static int socketfd;
     static int rval;
     static std::string ip;

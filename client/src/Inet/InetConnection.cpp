@@ -4,8 +4,8 @@
 
 ConnectionState   InetConnection::m_state = ConnectionState::DISCONNECTED;
 
-struct sockaddr_in  InetConnection::server;
-struct sockaddr_in  InetConnection::me;
+struct sockaddr_in  InetConnection::me_tcp;
+struct sockaddr_in  InetConnection::me_udp;
 int               InetConnection::socketfd = -1;
 fd_set InetConnection::rset;
 std::string       InetConnection::ip = "";
@@ -29,7 +29,7 @@ void InetConnection::destroy(void)  {
 bool InetConnection::sendTCP(const std::string& msg) {
     bool success = false;
 
-    if((::send(socketfd, msg.c_str(),strlen(msg.c_str()), 0)) < 0) {
+    if((::sendto(socketfd, msg.c_str(),strlen(msg.c_str()), 0, reinterpret_cast<struct sockaddr *>(&me_tcp), sizeof(me_tcp))) < 0) {
         std::cout << "error sendto()" << std::endl;
     }
     else {
@@ -41,7 +41,7 @@ bool InetConnection::sendTCP(const std::string& msg) {
 }
 bool InetConnection::sendUDP(const std::string& msg) {
   bool success = false;
-  if((::sendto(socketudp, msg.c_str(), sizeof(msg.c_str()), 0, reinterpret_cast<struct sockaddr *>(&server), sizeof(server))) < 0) {
+  if((::sendto(socketudp, msg.c_str(), sizeof(msg.c_str()), 0, reinterpret_cast<struct sockaddr *>(&me_udp), sizeof(me_udp))) < 0) {
     std::cerr << "UPD Send error" << std::endl;
   } else {
     std::cout << "Client: send UPD msg: " << msg << std::endl;
@@ -59,12 +59,17 @@ bool InetConnection::connectTCP(std::string l_ip, unsigned int l_port) {
         std::cerr << "NO SOCKET FOR YOU BIATCH!"<< std::endl;
         success = false;
     }
-    server.sin_family =AF_INET;
-    server.sin_port   = htons(l_port);
-    server.sin_addr.s_addr = inet_addr(l_ip.c_str());
-    // try to connect
+    memset( reinterpret_cast<char*>(&me_tcp), 0, sizeof(me_tcp));
+    me_tcp.sin_family =AF_INET;
+    me_tcp.sin_port   = htons(l_port);
+    me_tcp.sin_addr.s_addr = inet_addr(l_ip.c_str());
+    // lets just bind first
+    //if(bind(socketfd, reinterpret_cast<struct sockaddr*>(&me_tcp), sizeof(me_tcp)) < 0) {
+    //    std::cerr << "no bind lol" << std::endl;
+    //}
+
     // THIS IS BLOCKING!
-    if(::connect(socketfd,reinterpret_cast<struct sockaddr*>(&server),sizeof(server)) < 0) {
+    if(::connect(socketfd,reinterpret_cast<struct sockaddr*>(&me_tcp),sizeof(me_tcp)) < 0) {
         std::cerr << "Cannot connect..." << std::endl;
         m_state = ConnectionState::DISCONNECTED;
     }
@@ -75,18 +80,18 @@ bool InetConnection::connectTCP(std::string l_ip, unsigned int l_port) {
         port = l_port;
     }
     // create udp socket
+    memset( reinterpret_cast<char*>(&me_udp), 0, sizeof(me_udp));
+    me_udp.sin_family =AF_INET;
+    me_udp.sin_port   = htons(l_port);
+    me_udp.sin_addr.s_addr = inet_addr(l_ip.c_str());
     if((socketudp = socket(AF_INET, SOCK_DGRAM, 0 ))<0) {
       std::cerr << "no upd socket for you, BIATCH!" << std::endl;
       success = false;
     }
     // fill me, because why the fuck not
-    memset( reinterpret_cast<char*>(&me), 0, sizeof(me));
-    me.sin_family = AF_INET;
-    me.sin_port = htons(l_port);
-    me.sin_addr.s_addr = inet_addr(l_ip.c_str());
-    if(bind(socketudp, reinterpret_cast<struct sockaddr*>(&me), sizeof(me)) <0) {
-      std::cerr << "no bind lol" << std::endl;
-    }
+    //if(bind(socketudp, reinterpret_cast<struct sockaddr*>(&me_udp), sizeof(me_udp)) <0) {
+    //  std::cerr << "no bind lol" << std::endl;
+    //}
     return success;
 }
 bool InetConnection::disconnect() {
@@ -108,8 +113,7 @@ std::string InetConnection::update() {
             recv(socketfd, buffer, sizeof(buffer), 0);
             //std::cout << buffer << std::endl;
             if(strlen(buffer) == 0) {
-                std::cout << "server disconnected!" << std::endl;
-                m_state = ConnectionState::TIMING_OUT;
+                // std::cout << "server disconnected!" << std::endl;
             } else {
                 msg = buffer;
             }

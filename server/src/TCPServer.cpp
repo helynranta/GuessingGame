@@ -3,7 +3,7 @@
 /* Constructor: TCPSserver */
 TCPServer::TCPServer(void) {
     srand(time(nullptr));
-    random_number = rand()%10;
+    random_number = rand()%9+1;
 }
 /* Deconstructor: ~TCPSserver */
 TCPServer::~TCPServer (void) {
@@ -34,17 +34,18 @@ void TCPServer::select(void) {
         FD_SET(it.getTCPSock(), &readfds);
         if(it.getTCPSock() >= l_max) l_max = it.getTCPSock() + 1;
     }
-    tv.tv_sec = 2; tv.tv_usec = 0;
+    tv.tv_sec = 2;
     if(::select(l_max, &readfds, nullptr, nullptr, &tv) > 0) { // dat select
         // check for incoming TCP connections
         if (FD_ISSET(sockfd_tcp, &readfds)) {
             connected.emplace_back(++ID_COUNT, ::accept(sockfd_tcp, static_cast<struct sockaddr*>(NULL), NULL));
             std::cout << "new client connected with TCP!" << std::endl << "amount connected clients now: " << connected.size() << std::endl;;
+            // give client new id
             std::string new_id_msg = "newid:"+std::to_string(connected.back().getID());
             std::cout << new_id_msg << std::endl;
             ::sendto(connected.back().getTCPSock(), new_id_msg.c_str(), sizeof(new_id_msg.c_str()), 0, reinterpret_cast<const struct sockaddr *>(NULL), 0);
             for(auto& sit : connected) {
-                send(sit.getTCPSock(), ("srvmsg:New client connected, User"+std::to_string(connected.back().getID())).c_str(), 1024, 0);
+                send(sit.getTCPSock(), ("srvmsg:New client connected, "+connected.back().getNick()).c_str(), 1024, 0);
             }
         }
         // check for incoming UDP diagrams
@@ -57,7 +58,7 @@ void TCPServer::select(void) {
                 for(auto& sit : connected) {
                     send(sit.getTCPSock(), ("srvmsg:We got a new winner, User"+sbuffer.substr(1,sbuffer.length())).c_str(), 1024, 0);
                 }
-                random_number = rand()%10;
+                random_number = rand()%9+1;
             } else {
                 std::cout << random_number << "!=" << n << std::endl;
             }
@@ -132,7 +133,7 @@ bool TCPServer::init(void) {
     }
     if(bind(sockfd_udp, reinterpret_cast<struct sockaddr*>(&my_addr), sizeof(my_addr)) <0) {
       std::cerr << "no bind lol" << std::endl;
+      success = false;
     }
-    return success;
     return success;
 }

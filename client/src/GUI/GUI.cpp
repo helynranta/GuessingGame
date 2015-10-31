@@ -9,13 +9,13 @@ GUI::GUI (SDL_Renderer* r) : m_renderer(r) {
 GUI::~GUI () {
     for ( auto& it : m_GUITexts )
     {
-        std::cout << "remove: " << it.second->getText() << std::endl;
+        //std::cout << "remove: " << it.second->getText() << std::endl;
         delete it.second;
     }
     m_GUITexts.empty();
     for ( auto& it : m_GUIInputs )
     {
-        std::cout << "remove: " << it.second->getText() << std::endl;
+        //std::cout << "remove: " << it.second->getText() << std::endl;
         delete it.second;
     }
     m_GUIInputs.empty();

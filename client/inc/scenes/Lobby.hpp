@@ -66,6 +66,7 @@ public:
                 }
             } else {
                 std::cerr << "undefined message recieved!" << std::endl;
+                std::cout << msg << std::endl;
             }
         }
         if(Input::isKeyPressed(SDLK_RETURN) && gui->getInput("input")->getText().length() > 1) {
