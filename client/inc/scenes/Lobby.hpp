@@ -31,7 +31,7 @@ public:
     }
 
     inline void update(float dt) override {
-        std::string msg = InetConnection::update();
+        std::string msg = Engine::connection->update();
         if(msg.length() > 0) {
             std::vector<std::string> msgv = split(msg, ':');
             std::cout << msg << std::endl;
@@ -65,16 +65,16 @@ public:
                     x += 24;
                 }
             } else {
-                std::cerr << "undefined message recieved!" << std::endl;
+                std::cerr << "undefined message recieved of length" << msg.length() << std::endl;
                 std::cout << msg << std::endl;
             }
         }
         if(Input::isKeyPressed(SDLK_RETURN) && gui->getInput("input")->getText().length() > 1) {
-            InetConnection::sendTCP(gui->getInput("input")->getText());
+            Engine::connection->sendTCP(gui->getInput("input")->getText());
             gui->getInput("input")->setText("");
         } else if(Input::isKeyPressed(SDLK_RETURN)) {
             if(atoi(gui->getInput("input")->getText().c_str()) != 0) {
-                InetConnection::sendUDP(gui->getInput("input")->getText()+std::to_string(id));
+                Engine::connection->sendUDP(gui->getInput("input")->getText()+std::to_string(id));
                 gui->getInput("input")->setText("");
             }
         }

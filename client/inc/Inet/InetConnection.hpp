@@ -22,25 +22,31 @@
 enum ConnectionState { DISCONNECTED, CONNECTING, CONNECTED, TIMING_OUT, EXITING };
 
 class InetConnection {
+friend class Engine;
 private:
-    static struct sockaddr_in me_tcp;
-    static struct sockaddr_in me_udp;
-    static int socketfd;
-    static int rval;
-    static std::string ip;
-    static unsigned int port;
-    static fd_set rset;
-    static int socketudp;
+    struct sockaddr_in me_addr;
+    struct sockaddr_in server;
+    struct sockaddr_in hints; // unused
+    struct sockaddr_in res; // unused
+    int sockettcp = -1;
+    int socketudp = -1;
+    int rval;
+    std::string ip = "";
+    unsigned int port = 0;
+    fd_set rset;
+protected:
+    inline InetConnection() {;}
+    inline virtual ~InetConnection() {;}
 public:
-    static ConnectionState m_state;
-    static bool sendTCP(const std::string& msg);
-    static bool sendUDP(const std::string& msg);
-    static bool connectTCP(std::string ip, unsigned int port);
-    static bool disconnect();
-    static std::string update();
-    static std::vector<Message*> messages;
-    static void init();
-    static void destroy();
-    static void setState(ConnectionState s) {m_state = s;}
+    ConnectionState m_state = ConnectionState::DISCONNECTED;
+    bool sendTCP(const std::string& msg);
+    bool sendUDP(const std::string& msg);
+    bool connect(std::string ip, unsigned int port);
+    bool disconnect();
+    std::string update();
+    std::vector<Message*> messages;
+    void init();
+    void destroy();
+    void setState(ConnectionState s) {m_state = s;}
 };
 #endif

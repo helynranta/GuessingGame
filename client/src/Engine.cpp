@@ -6,8 +6,9 @@
 
 // statics
 map<string, Scene*> Engine::m_scenes;
-string Engine::m_currentScene = "";
-GameState Engine::gameState = GameState::EXIT;
+string          Engine::m_currentScene = "";
+GameState       Engine::gameState = GameState::EXIT;
+InetConnection* Engine::connection = nullptr;
 //debug
 unsigned int Engine::debugKey = SDLK_o;
 bool Engine::debugging = false;
@@ -22,7 +23,7 @@ Engine::~Engine () {
 
     R::destroy();
     Input::empty();
-    InetConnection::disconnect();
+    connection->disconnect();
     Window::destroy();
     TTF_Quit();
     IMG_Quit();
@@ -56,6 +57,7 @@ int Engine::init() {
     success = Camera::init(800, 600);
     success = Window::init(800, 600);
     R::init(Window::getRenderer());
+    connection = new InetConnection();
     // return what ever happened
     return success;
 }

@@ -27,6 +27,7 @@ private:
 	std::string nick = "undefined";
 	int TCPSock = -1;
 	struct sockaddr_in info;
+	socklen_t sock_len;
 protected:
 	/* protected data */
 public:
@@ -37,17 +38,19 @@ public:
 	//* getters *//
 	inline int getID() const { return id; }
 	inline int getTCPSock() const { return TCPSock; }
-	inline struct sockaddr_in getSockaddr_in() const { return info; }
+	inline struct sockaddr_in getAddr() const { return info; }
 	inline std::string getNick() const { return nick; }
 	//* setters *//
 	inline void setNick(std::string n) { nick = n; }
-	inline void setSockaddr_in(struct sockaddr_in in) { info = in; }
+	inline void setAddr(struct sockaddr_in in, socklen_t t) { info = in; sock_len = t; }
+
+	int tries = 0;
 };
 
 class TCPServer {
 private:
     /* private data */
-    const int PORT = 3000;
+    const int PORT = 5200;
     const int BACKLOG = 10; // how many pending connections queue will hold
 
     STATE m_state = STATE::EXIT;

@@ -70,6 +70,8 @@ public:
     static void setDebugKey(unsigned int key) { debugKey = key; }
     static void setDebugingMode(bool d) { debugging = d; }
     static bool isDebugging()  { return debugging; }
+
+    static InetConnection* connection;
 };
 
 #endif

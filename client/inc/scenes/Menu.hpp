@@ -19,7 +19,7 @@ public:
     }
 
     inline void awake() override {
-        InetConnection::connectTCP("127.0.0.1", 3000);
+        //Engine::connection->connect("127.0.0.1", 5200);
         gui->addText("hint", new GUIText(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
         gui->addInput("ip", new GUIInput(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
         gui->getText("hint")->setX(Camera::getWidth()/2.0f)->setY(Camera::getHeight()/2.0f-30);
@@ -32,10 +32,10 @@ public:
         if(Input::isKeyPressed(SDLK_RETURN) && gui->getInput("ip")->getText().length() > 2) {
             gui->getInput("ip")->hide();
             gui->getText("hint")->setText("Connecting to: "+gui->getInput("ip")->getText());
-            InetConnection::setState(ConnectionState::CONNECTING);
-        } else if(InetConnection::m_state == ConnectionState::CONNECTING)
-            InetConnection::connectTCP(gui->getInput("ip")->getText(), 3000);
-        else if(InetConnection::m_state == ConnectionState::CONNECTED) {
+            Engine::connection->setState(ConnectionState::CONNECTING);
+        } else if(Engine::connection->m_state == ConnectionState::CONNECTING)
+            Engine::connection->connect(gui->getInput("ip")->getText(), 5200);
+        else if(Engine::connection->m_state == ConnectionState::CONNECTED) {
             Engine::startScene("Lobby");
         }
     }
@@ -45,7 +45,7 @@ public:
     }
 
     inline void draw() override {
-        if(InetConnection::m_state == ConnectionState::DISCONNECTED) {
+        if(Engine::connection->m_state == ConnectionState::DISCONNECTED) {
             gui->getText("hint")->setText("Enter server IP address")->show();
             gui->getInput("ip")->show();
         } else {
