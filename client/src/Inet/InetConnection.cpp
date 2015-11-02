@@ -20,7 +20,7 @@ bool InetConnection::sendTCP(const std::string& msg) {
         std::cout << "error sendto()" << std::endl;
     }
     else {
-        std::cout << "TCP: Sent msg: " << msg << std::endl;
+        //std::cout << "TCP: Sent msg: " << msg << std::endl;
         success = true;
     }
 
@@ -31,7 +31,7 @@ bool InetConnection::sendUDP(const std::string& msg) {
   if((::sendto(socketudp, msg.c_str(), sizeof(msg.c_str()), 0, reinterpret_cast<struct sockaddr *>(&server), sizeof(server))) < 0) {
     std::cerr << "UPD Send error" << std::endl;
   } else {
-    std::cout << "Client: send UPD msg: " << msg << std::endl;
+    //std::cout << "Client: send UPD msg: " << msg << std::endl;
     success = true;
   }
   return success;
@@ -113,7 +113,6 @@ std::string InetConnection::update() {
             }
         }
         if (FD_ISSET(socketudp, &rset)) {
-            std::cout << "lol" << std::endl;
             memset(buffer, '\0', sizeof(buffer));
             recv(socketudp, buffer, sizeof(buffer), 0);
             if(strlen(buffer) == 0) {

@@ -73,7 +73,7 @@ void TCPServer::select(void) {
                     break;
                 }
             }
-            if(incoming->tries < 3) {
+            if(incoming->tries <= 3) {
               int n = atoi(sbuffer.substr(0,1).c_str());
               if(random_number == n) {
                   for(auto& sit : connected) {
@@ -87,7 +87,7 @@ void TCPServer::select(void) {
                   random_number = rand()%9+1;
               } else {
                   std::cout << random_number << "!=" << n << std::endl;
-                  if((sendto(sockfd_udp, ("srvmsg:wrong, tried "+std::to_string(tr)+" times").c_str(), 1024, 0, reinterpret_cast<struct sockaddr*>(&from), sizeof(from)))<0) {
+                  if((sendto(sockfd_udp, ("srvmsg:wrong, tried "+std::to_string(tr)+" time(s)").c_str(), 1024, 0, reinterpret_cast<struct sockaddr*>(&from), sizeof(from)))<0) {
                       std::cerr << "server cannot answer with udp..." << std::endl;
                   }
               }
