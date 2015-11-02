@@ -34,16 +34,16 @@ void TCPServer::select(void) {
         FD_SET(it.getTCPSock(), &readfds);
         if(it.getTCPSock() >= l_max) l_max = it.getTCPSock() + 1;
     }
-    tv.tv_sec = 1;
-
+    // incoming connection information
     struct sockaddr_in from;
     socklen_t from_size = sizeof from;
+    tv.tv_sec = 1; // gibu
     if(::select(l_max, &readfds, nullptr, nullptr, &tv) > 0) { // dat select
         // check for incoming TCP connections
         if (FD_ISSET(sockfd_tcp, &readfds)) {
             memset(buffer, '\0', sizeof(buffer));
-            connected.emplace_back(++ID_COUNT, ::accept(sockfd_tcp, NULL, NULL));
-            //connected.back().setAddr(incoming, in_size);
+            connected.emplace_back(++ID_COUNT, ::accept(sockfd_tcp, reinterpret_cast<struct sockaddr*>(&from), &from_size));
+            connected.back().setAddr(from, from_size);
             std::cout << "new client connected with TCP!" << std::endl << "amount connected clients now: " << connected.size() << std::endl;;
             // give client new id
             std::string new_id_msg = "newid:"+std::to_string(connected.back().getID());
@@ -64,28 +64,39 @@ void TCPServer::select(void) {
             std::string sbuffer(buffer);
             // identify
             int tr = 0;
+            Connection* incoming = nullptr;
             for(auto& it : connected) {
                 if(atoi(sbuffer.substr(1, sbuffer.length()).c_str()) == it.getID()) {
-                    it.setAddr(from, from_size);
+                    //it.setAddr(from, from_size);
+                    incoming = &it;
                     tr = ++it.tries;
+                    break;
                 }
             }
-            int n = atoi(sbuffer.substr(0,1).c_str());
-            if(random_number == n) {
-                for(auto& sit : connected) {
-                    if(::send(sit.getTCPSock(),("srvmsg:We got a new winner, User"+sbuffer.substr(1,sbuffer.length())).c_str(),1024, 0) < 0) {
-                        std::cerr << "problems answering with tcp" << std::endl;
-                    }
-                    for( auto& it : connected) {
-                        it.tries = 0;
-                    }
-                }
-                random_number = rand()%9+1;
+            if(incoming->tries < 3) {
+              int n = atoi(sbuffer.substr(0,1).c_str());
+              if(random_number == n) {
+                  for(auto& sit : connected) {
+                      if(::send(sit.getTCPSock(),("srvmsg:We got a new winner, User"+sbuffer.substr(1,sbuffer.length())).c_str(),1024, 0) < 0) {
+                          std::cerr << "problems answering with tcp" << std::endl;
+                      }
+                      for( auto& it : connected) {
+                          it.tries = 0;
+                      }
+                  }
+                  random_number = rand()%9+1;
+              } else {
+                  std::cout << random_number << "!=" << n << std::endl;
+                  if((sendto(sockfd_udp, ("srvmsg:wrong, tried "+std::to_string(tr)+" times").c_str(), 1024, 0, reinterpret_cast<struct sockaddr*>(&from), sizeof(from)))<0) {
+                      std::cerr << "server cannot answer with udp..." << std::endl;
+                  }
+              }
             } else {
-                std::cout << random_number << "!=" << n << std::endl;
-                if((sendto(sockfd_udp, ("srvmsg:wrong, tried "+std::to_string(tr)+" times").c_str(), 1024, 0, reinterpret_cast<struct sockaddr*>(&from), sizeof(from)))<0) {
-                    std::cerr << "server cannot answer with udp..." << std::endl;
-                }
+              std::cout << "too many tries from " << incoming->getNick() << std::endl;
+              from = *incoming->getAddr();
+              if((sendto(sockfd_udp, "srvmsg:you have tried too many times", 1024, 0, reinterpret_cast<struct sockaddr*>(&from), from_size))<0) {
+                  std::cerr << "server cannot answer with udp..." << std::endl;
+              }
             }
         }
         // loop threw old TCP connections
@@ -114,6 +125,9 @@ void TCPServer::logic(void) {
 }
 /* destroy */
 void TCPServer::destroy(void) {
+    for(auto& it : connected) {
+      close(it.getTCPSock());
+    }
     close(new_fd);
     close(sockfd_tcp);
     close(sockfd_udp);

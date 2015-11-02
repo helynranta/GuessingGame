@@ -38,7 +38,7 @@ public:
 	//* getters *//
 	inline int getID() const { return id; }
 	inline int getTCPSock() const { return TCPSock; }
-	inline struct sockaddr_in getAddr() const { return info; }
+	inline struct sockaddr_in* getAddr() { return &info; }
 	inline std::string getNick() const { return nick; }
 	//* setters *//
 	inline void setNick(std::string n) { nick = n; }
