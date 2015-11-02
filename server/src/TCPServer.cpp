@@ -10,7 +10,6 @@ TCPServer::~TCPServer (void) {
 
 }
 /* run: main loop for server */
-// http://stackoverflow.com/questions/2284428/in-c-networking-using-select-do-i-first-have-to-listen-and-accept
 void TCPServer::run(void) {
     if(init()) {
         std::cout << "--------SERVER RUNNING----------" << std::endl;
@@ -21,6 +20,7 @@ void TCPServer::run(void) {
         }
     }
 }
+// http://stackoverflow.com/questions/2284428/in-c-networking-using-select-do-i-first-have-to-listen-and-accept
 void TCPServer::select(void) {
     int l_max = 0; // max is the biggest possible socket id for select
     char buffer[1024]; // one buffer to rule them all
@@ -66,8 +66,8 @@ void TCPServer::select(void) {
             int tr = 0;
             Connection* incoming = nullptr;
             for(auto& it : connected) {
-                if(atoi(sbuffer.substr(1, sbuffer.length()).c_str()) == it.getID()) {
-                    //it.setAddr(from, from_size);
+                // equal addresses!
+                if(memcmp((it.getAddr()), &from, from_size) == 0) {
                     incoming = &it;
                     tr = ++it.tries;
                     break;
@@ -77,7 +77,7 @@ void TCPServer::select(void) {
               int n = atoi(sbuffer.substr(0,1).c_str());
               if(random_number == n) {
                   for(auto& sit : connected) {
-                      if(::send(sit.getTCPSock(),("srvmsg:We got a new winner, User"+sbuffer.substr(1,sbuffer.length())).c_str(),1024, 0) < 0) {
+                      if(::send(sit.getTCPSock(),("srvmsg:We got a new winner "+ incoming->getNick()).c_str(),1024, 0) < 0) {
                           std::cerr << "problems answering with tcp" << std::endl;
                       }
                       for( auto& it : connected) {
