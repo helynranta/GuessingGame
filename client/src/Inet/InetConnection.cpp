@@ -44,7 +44,7 @@ bool InetConnection::connect(std::string l_ip, unsigned int l_port) {
     server.sin_addr.s_addr = inet_addr(l_ip.c_str());
     // other inits
     bool success = true;
-    m_state = ConnectionState::CONNECTING;
+    m_state = ConnectionState::CONNECTED;
     std::cout << "Trying to connect to host: " << l_ip << ":" << l_port << std::endl;
     // connect with TCP
     if((sockettcp = socket(AF_INET, SOCK_STREAM, 0))<0) {
@@ -54,15 +54,8 @@ bool InetConnection::connect(std::string l_ip, unsigned int l_port) {
     //try to bind
     memset( reinterpret_cast<char*>(&me_addr), 0, sizeof(me_addr));
     me_addr.sin_family = AF_INET;
-    me_addr.sin_port   = htons(3200);
+    me_addr.sin_port   = htons(0);
     me_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    for(unsigned int i = 1024; i < 6500; i++) {
-        me_addr.sin_port   = htons(i);
-        if(::bind(sockettcp, reinterpret_cast<struct sockaddr*>(&me_addr), sizeof(me_addr)) >= 0) {
-            break;
-        }
-    }
-
     // THIS IS BLOCKING!
     if(::connect(sockettcp,reinterpret_cast<struct sockaddr*>(&server),sizeof(me_addr)) < 0) {
         std::cerr << "Cannot connect..." << std::endl;
@@ -100,25 +93,31 @@ std::string InetConnection::update() {
     FD_SET(sockettcp, &rset);
     FD_SET(socketudp, &rset);
     int l_max = std::max(sockettcp, socketudp);
-    tv.tv_sec = long(0.01);
-    if(select(l_max+1, &rset, nullptr, nullptr, &tv) > 0) {
+    tv.tv_sec = 0.01;
+    if(::select(l_max+1, &rset, nullptr, nullptr, &tv) > 0) {
         if(FD_ISSET(sockettcp, &rset)) {
             memset(buffer, '\0', sizeof(buffer));
-            recv(sockettcp, buffer, sizeof(buffer), 0);
-            //std::cout << buffer << std::endl;
-            if(strlen(buffer) == 0) {
-                // std::cout << "server disconnected!" << std::endl;
+            if(recv(sockettcp, buffer, sizeof(buffer), 0)<0) {
+                std::cerr << "problems officer" << std::endl;
             } else {
-                msg = buffer;
+                //std::cout << buffer << std::endl;
+                if(strlen(buffer) == 0) {
+                    // std::cout << "server disconnected!" << std::endl;
+                } else {
+                    msg = buffer;
+                }
             }
         }
         if (FD_ISSET(socketudp, &rset)) {
             memset(buffer, '\0', sizeof(buffer));
-            recv(socketudp, buffer, sizeof(buffer), 0);
-            if(strlen(buffer) == 0) {
-                // std::cout << "server disconnected!" << std::endl;
+            if(recv(socketudp, buffer, sizeof(buffer), 0)<0) {
+                std::cerr << "problems officer" << std::endl;
             } else {
-                msg = buffer;
+                if(strlen(buffer) == 0) {
+                    // std::cout << "server disconnected!" << std::endl;
+                } else {
+                    msg = buffer;
+                }
             }
         }
     }

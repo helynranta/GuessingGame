@@ -18,6 +18,8 @@
 #include <sys/ioctl.h>
 #include <arpa/inet.h> // inet_ntoa
 
+#include "Message.hpp"
+
 enum STATE {RUNNING, EXIT};
 
 class Connection {
@@ -43,7 +45,6 @@ public:
 	//* setters *//
 	inline void setNick(std::string n) { nick = n; }
 	inline void setAddr(struct sockaddr_in in, socklen_t t) { info = in; sock_len = t; }
-
 	int tries = 0;
 };
 
@@ -61,6 +62,8 @@ private:
     struct timeval tv;  // time wait for socket to be changed
     fd_set readfds, writefds, exceptfds;
     std::vector<Connection> connected;
+	std::vector<Message> messages_in;
+	std::vector<Message> messages_out;
 protected:
     /* protected data */
     bool init(void);
