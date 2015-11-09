@@ -54,8 +54,14 @@ bool InetConnection::connect(std::string l_ip, unsigned int l_port) {
     //try to bind
     memset( reinterpret_cast<char*>(&me_addr), 0, sizeof(me_addr));
     me_addr.sin_family = AF_INET;
-    me_addr.sin_port   = htons(0);
     me_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    unsigned int i;
+     for(i = 1024; i < 6500; i++) {
+        me_addr.sin_port   = htons(i);
+        if(::bind(sockettcp, reinterpret_cast<struct sockaddr*>(&me_addr), sizeof(me_addr)) >= 0) {
+            break;
+        }
+    }
     // THIS IS BLOCKING!
     if(::connect(sockettcp,reinterpret_cast<struct sockaddr*>(&server),sizeof(me_addr)) < 0) {
         std::cerr << "Cannot connect..." << std::endl;

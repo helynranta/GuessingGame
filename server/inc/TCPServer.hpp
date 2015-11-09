@@ -62,8 +62,8 @@ private:
     struct timeval tv;  // time wait for socket to be changed
     fd_set readfds, writefds, exceptfds;
     std::vector<Connection> connected;
-	std::vector<Message> messages_in;
-	std::vector<Message> messages_out;
+    std::vector<Message> messages_in;
+    std::vector<Message> messages_out;
 protected:
     /* protected data */
     bool init(void);

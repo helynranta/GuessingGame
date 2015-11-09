@@ -41,7 +41,7 @@ void TCPServer::select(void) {
             // accept new sockets
             int tmpSocket = -1;
             if((tmpSocket = ::accept(sockfd_tcp, reinterpret_cast<struct sockaddr*>(&from), &from_size))<0) {
-
+		std::cerr << "connection from client refused" << std::endl;
             } else {
                 connected.emplace_back(++ID_COUNT, tmpSocket);
                 connected.back().setAddr(from, from_size);
@@ -63,11 +63,12 @@ void TCPServer::select(void) {
                 Connection* incoming = nullptr;
                 for(auto& it : connected) {
                     // equal addresses!
-                    if(memcmp((it.getAddr()), &from, from_size) == 0) {
+                    if(memcmp(it.getAddr(), (&from), from_size) == 0) {
                         incoming = &it;
                         tr = ++it.tries;
                         break;
-                    }
+                    } 
+		    
                 }
                 if(incoming == nullptr) {
                     std::cerr << "someone sent a udp message, could not indentify..." << std::endl;
@@ -101,9 +102,15 @@ void TCPServer::select(void) {
                 ::recv(rit.getTCPSock(), buffer, sizeof(buffer), 0);
                 // this is not dones
                 if(strlen(buffer) == 0) {
-                    rit = connected.back();
+		    for(auto& it : connected) {
+		      if (memcmp(&it, &rit, sizeof(Connection)) != 0) {
+			messages_out.emplace_back("srvmsg:"+rit.getNick()+" has left the server", it.getTCPSock());
+		      }
+		    }
+		    rit = connected.back();
                     connected.pop_back();
-                    std::cout << "TCP user has disconnected!" << std::endl << "amount connected clients now: " << connected.size() << std::endl;
+                    std::cout << "TCP user has disconnected!" << std::endl << "amount connected clients now: " << connected.size() << 
+                    std::endl;
                 } else {
                     // broadcast chat message to all users
                     std::string clmsg(buffer);

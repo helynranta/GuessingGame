@@ -8,7 +8,6 @@ Message::Message(std::string msg, int tcpsocket)
 Message::Message (std::string msg, int udpsocket, struct sockaddr_in info)
 : m_udpsocket(udpsocket), m_message(msg)
 {
-    std::cout << m_message << std::endl;
     m_type = TYPE::UDP;
     m_contact = info;
     m_contact_len = sizeof(m_contact);
