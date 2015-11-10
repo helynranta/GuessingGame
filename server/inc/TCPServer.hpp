@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <ctime>
 
 #include <unistd.h> // close
 #include <netdb.h> // getprotobyname
@@ -63,7 +64,7 @@ private:
     fd_set readfds, writefds, exceptfds;
     std::vector<Connection> connected;
     std::vector<Message> messages_in;
-    std::vector<Message> messages_out;
+    std::vector<Message*> messages_out;
 protected:
     /* protected data */
     bool init(void);
@@ -71,6 +72,7 @@ protected:
 	void logic(void);
 	// our random number
 	int random_number = rand() % 10;
+	float MESSAGE_RESEND_DELAY = 1000.0f;
 public:
     /* public data */
     TCPServer(void);

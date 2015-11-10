@@ -56,9 +56,10 @@ bool InetConnection::connect(std::string l_ip, unsigned int l_port) {
     me_addr.sin_family = AF_INET;
     me_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     unsigned int i;
-     for(i = 1024; i < 6500; i++) {
+     for(i = 4000; i < 6500; i++) {
         me_addr.sin_port   = htons(i);
         if(::bind(sockettcp, reinterpret_cast<struct sockaddr*>(&me_addr), sizeof(me_addr)) >= 0) {
+            std::cout << "found free port at" << i << std::endl;
             break;
         }
     }

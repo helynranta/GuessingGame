@@ -1,16 +1,18 @@
 #include "Message.hpp"
 
 Message::Message(std::string msg, int tcpsocket)
-    : m_tcpsocket(tcpsocket), m_message(msg)
 {
     m_type = TYPE::TCP;
+    m_tcpsocket = tcpsocket;
+    m_message = msg;
 }
 Message::Message (std::string msg, int udpsocket, struct sockaddr_in info)
-: m_udpsocket(udpsocket), m_message(msg)
 {
     m_type = TYPE::UDP;
     m_contact = info;
     m_contact_len = sizeof(m_contact);
+    m_udpsocket = udpsocket;
+    m_message = msg;
 }
 Message::~Message(void) {
 
@@ -36,5 +38,6 @@ bool Message::send(void) {
         std::cerr << "undefined behaviour " << __FILE__ << std::endl;
         success = false;
     }
+    m_sendtime = (clock())/CLOCKS_PER_SEC;
     return success;
 }

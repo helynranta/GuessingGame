@@ -39,16 +39,19 @@ void TCPServer::select(void) {
         if (FD_ISSET(sockfd_tcp, &readfds)) {
             memset(buffer, '\0', sizeof(buffer));
             // accept new sockets
-            int tmpSocket = -1;
-            if((tmpSocket = ::accept(sockfd_tcp, reinterpret_cast<struct sockaddr*>(&from), &from_size))<0) {
-		std::cerr << "connection from client refused" << std::endl;
+            int tmpSocket = ::accept(sockfd_tcp, reinterpret_cast<struct sockaddr*>(&from), &from_size);
+            if(tmpSocket <0) {
+		              std::cerr << "connection from client refused" << std::endl;
             } else {
                 connected.emplace_back(++ID_COUNT, tmpSocket);
                 connected.back().setAddr(from, from_size);
                 std::cout << "new client connected with TCP!" << std::endl << "amount connected clients now: " << connected.size() << std::endl;;
                 // create new messages to be sent with tcp
                 for(auto& sit : connected) {
-                    messages_out.emplace_back("srvmsg:New client connected, "+connected.back().getNick(), sit.getTCPSock());
+                    if(sit.getID() != ID_COUNT)
+                        messages_out.push_back(new Message("srvmsg:New client connected, "+connected.back().getNick(), sit.getTCPSock()));
+                    else
+                        messages_out.push_back(new Message("srvmsg:Welcome "+connected.back().getNick(), sit.getTCPSock()));
                 }
             }
         }
@@ -67,8 +70,8 @@ void TCPServer::select(void) {
                         incoming = &it;
                         tr = ++it.tries;
                         break;
-                    } 
-		    
+                    }
+
                 }
                 if(incoming == nullptr) {
                     std::cerr << "someone sent a udp message, could not indentify..." << std::endl;
@@ -78,7 +81,7 @@ void TCPServer::select(void) {
                         if(random_number == n) {
                             // start game again
                             for(auto& sit : connected) {
-                                messages_out.emplace_back("srvmsg:We got a new winner "+incoming->getNick(), sit.getTCPSock());
+                                messages_out.push_back(new Message("srvmsg:We got a new winner "+incoming->getNick(), sit.getTCPSock()));
                                 for(auto& it : connected) {
                                     it.tries = 0;
                                 }
@@ -86,11 +89,11 @@ void TCPServer::select(void) {
                             random_number = rand()%9+1;
                         } else {
                             std::cout << random_number << "!=" << n << std::endl;
-                            messages_out.emplace_back("srvmsg:wrong, tried "+std::to_string(tr)+" time(s)", sockfd_udp, *incoming->getAddr());
+                            messages_out.push_back(new Message("srvmsg:wrong, tried "+std::to_string(tr)+" time(s)", sockfd_udp, *incoming->getAddr()));
                         }
                     } else {
                         std::cout << "too many tries from " << incoming->getNick() << std::endl;
-                        messages_out.emplace_back("srvmsg:you have tried too many times", sockfd_udp, *incoming->getAddr());
+                        messages_out.push_back(new Message("srvmsg:you have tried too many times", sockfd_udp, *incoming->getAddr()));
                     }
                 }
             }
@@ -102,21 +105,20 @@ void TCPServer::select(void) {
                 ::recv(rit.getTCPSock(), buffer, sizeof(buffer), 0);
                 // this is not dones
                 if(strlen(buffer) == 0) {
-		    for(auto& it : connected) {
-		      if (memcmp(&it, &rit, sizeof(Connection)) != 0) {
-			messages_out.emplace_back("srvmsg:"+rit.getNick()+" has left the server", it.getTCPSock());
-		      }
-		    }
-		    rit = connected.back();
+        		    for(auto& it : connected) {
+                        if (memcmp(&it, &rit, sizeof(Connection)) != 0)
+                            messages_out.push_back(new Message("srvmsg:"+rit.getNick()+" has left the server", it.getTCPSock()));
+                    }
+                    rit = connected.back();
                     connected.pop_back();
-                    std::cout << "TCP user has disconnected!" << std::endl << "amount connected clients now: " << connected.size() << 
+                    std::cout << "TCP user has disconnected!" << std::endl << "amount connected clients now: " << connected.size() <<
                     std::endl;
                 } else {
                     // broadcast chat message to all users
                     std::string clmsg(buffer);
                     memset(buffer, '\0', sizeof(buffer));
                     for(auto& sit : connected) {
-                        messages_out.emplace_back("clmsg:"+std::to_string(rit.getID())+":"+clmsg, sit.getTCPSock());
+                        messages_out.push_back(new Message("clmsg:"+std::to_string(rit.getID())+":"+clmsg, sit.getTCPSock()));
                     }
                 }
             }
@@ -127,11 +129,13 @@ void TCPServer::logic(void) {
     // send messages
     for(auto& out : messages_out) {
         // if send is successfull, remove from list
-        if(out.send()) {
-            out = messages_out.back();
-            messages_out.pop_back();
-        } else {
-            std::cerr << "cannot send message!" << std::endl;
+        if((out->getSendTime() + MESSAGE_RESEND_DELAY) > float(clock())/CLOCKS_PER_SEC) {
+            if(out->send()) {
+                out = messages_out.back();
+                messages_out.pop_back();
+            } else {
+                std::cerr << "cannot send message!" << std::endl;
+            }
         }
     }
     // handle incoming messages

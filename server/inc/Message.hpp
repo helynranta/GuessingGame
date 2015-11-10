@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <ctime>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -23,6 +24,7 @@ private:
     socklen_t m_contact_len = 0;
     TYPE m_type;
 	std::string m_message;
+	float m_sendtime = float(clock())/CLOCKS_PER_SEC;
 protected:
 	/* protected data */
 public:
@@ -31,6 +33,7 @@ public:
     Message (std::string msg, int udpsocket, struct sockaddr_in info);
 	virtual ~Message();
 	bool send(void);
+	float getSendTime() const { return m_sendtime; }
 };
 
 #endif
