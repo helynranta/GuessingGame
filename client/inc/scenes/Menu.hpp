@@ -19,7 +19,7 @@ public:
     }
 
     inline void awake() override {
-        Engine::connection->connect("127.0.0.1", 5200);
+        //Engine::connection->connect("127.0.0.1", 5200);
         gui->addText("hint", new GUIText(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
         gui->addInput("ip", new GUIInput(Window::getRenderer(), R::getFont("res/fonts/OpenSans.ttf")));
         gui->getText("hint")->setX(Camera::getWidth()/2.0f)->setY(Camera::getHeight()/2.0f-30);
